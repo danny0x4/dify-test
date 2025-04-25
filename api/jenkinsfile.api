@@ -1,0 +1,86 @@
+@Library('jenkins-shared-library@main')_
+
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials-id')
+        DOCKER_IMAGE = 'danny0x4/dify-api:custom'
+        BUILD_TAG = "${BUILD_NUMBER}"
+        K8S_MANIFEST_REPO = 'https://github.com/danny0x4/k8s-manifests.git'
+        GITHUB_TOKEN = credentials('github-token-id')
+        DEPLOYMENT_YML_PATH = 'dify-test/api/deployment.yaml'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+                script {
+                    env.DEPLOY_START_TIME = new Date().format("yyyy-MM-dd HH:mm:ss")
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    echo 'Building dify-api image...'
+                    sh "docker build -t ${DOCKER_IMAGE}-${BUILD_TAG} -f api/Dockerfile ."
+                    sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
+                    sh "docker push ${DOCKER_IMAGE}-${BUILD_TAG}"
+                    sh "docker tag ${DOCKER_IMAGE}-${BUILD_TAG} ${DOCKER_IMAGE}"
+                    sh "docker push ${DOCKER_IMAGE}"
+                }
+            }
+        }
+
+
+        stage('Update K8s Manifests') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'github-token-id', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_PAT')]) {
+                    script {
+                        def GIT_URL = "https://${GITHUB_USER}:${GITHUB_PAT}@github.com/danny0x4/k8s-manifests.git"
+
+                        sh "rm -rf k8s-update && mkdir -p k8s-update"
+                        dir('k8s-update') {
+                            sh "git clone ${GIT_URL} ."
+
+                            sh """
+                                sed -E -i 's|image: \\${DOCKER_IMAGE}(-[0-9]+)?|image: ${DOCKER_IMAGE}-${BUILD_TAG}|g' ${DEPLOYMENT_YML_PATH}
+                            """
+
+                            sh """
+                                git config user.email "${GITHUB_USER}@users.noreply.github.com"
+                                git config user.name "${GITHUB_USER}"
+                                git add ${DEPLOYMENT_YML_PATH}
+                                git commit -m "Update dify-api image to ${BUILD_TAG}" || echo 'Nothing to commit.'
+                                git push origin main
+                            """
+                        }
+
+                        sh "rm -rf k8s-update"
+                    }
+                }
+            }
+        }
+
+        stage('Remove Docker Image') {
+            steps {
+                script {
+                    echo "Cleaning up local Docker images"
+                    sh "docker image prune -a -f"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ dify-api pipeline succeeded!'
+        }
+        failure {
+            echo '❌ dify-api pipeline failed!'
+        }
+    }
+}
