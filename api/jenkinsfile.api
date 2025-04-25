@@ -26,7 +26,7 @@ pipeline {
             steps {
                 script {
                     echo 'Building dify-api image...'
-                    sh "docker build -t ${DOCKER_IMAGE}-${BUILD_TAG} -f api/Dockerfile ."
+                    sh "docker build -t ${DOCKER_IMAGE}-${BUILD_TAG} -f Dockerfile api/"
                     sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
                     sh "docker push ${DOCKER_IMAGE}-${BUILD_TAG}"
                     sh "docker tag ${DOCKER_IMAGE}-${BUILD_TAG} ${DOCKER_IMAGE}"
