@@ -1,7 +1,7 @@
 import logging
 import time
 
-from app.configs import dify_config
+from configs import dify_config
 from contexts.wrapper import RecyclableContextVar
 from dify_app import DifyApp
 

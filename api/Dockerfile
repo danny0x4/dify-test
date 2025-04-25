@@ -67,7 +67,7 @@ ENV TIKTOKEN_CACHE_DIR=/app/api/.tiktoken_cache
 RUN python -c "import tiktoken; tiktoken.encoding_for_model('gpt2')"
 
 # Copy source code
-COPY . /app/api/
+COPY . /app
 
 # Copy entrypoint
 COPY api/docker/entrypoint.sh /entrypoint.sh
