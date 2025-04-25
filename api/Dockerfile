@@ -18,7 +18,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc g++ libc-dev libffi-dev libgmp-dev libmpfr-dev libmpc-dev
 
 # Install Python dependencies
-COPY api/pyproject.toml uv.lock ./
+COPY api/pyproject.toml api/uv.lock ./
 RUN uv sync --locked
 
 # production stage
