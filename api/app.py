@@ -10,7 +10,7 @@ def is_db_command():
 
 # create app
 if is_db_command():
-    from app_factory import create_migrations_app
+    from .app_factory import create_migrations_app
 
     app = create_migrations_app()
 else:
@@ -32,7 +32,7 @@ else:
 
         psycogreen.gevent.patch_psycopg()
 
-    from app_factory import create_app
+    from .app_factory import create_app
 
     app = create_app()
     celery = app.extensions["celery"]
