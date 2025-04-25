@@ -18,7 +18,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc g++ libc-dev libffi-dev libgmp-dev libmpfr-dev libmpc-dev
 
 # Install Python dependencies
-COPY pyproject.toml uv.lock ./
+COPY api/pyproject.toml uv.lock ./
 RUN uv sync --locked
 
 # production stage
@@ -70,7 +70,7 @@ RUN python -c "import tiktoken; tiktoken.encoding_for_model('gpt2')"
 COPY . /app/api/
 
 # Copy entrypoint
-COPY docker/entrypoint.sh /entrypoint.sh
+COPY api/docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ARG COMMIT_SHA
