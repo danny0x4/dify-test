@@ -70,7 +70,7 @@ RUN python -c "import tiktoken; tiktoken.encoding_for_model('gpt2')"
 COPY . /app/api/
 
 # Copy entrypoint
-COPY /api/docker/entrypoint.sh /entrypoint.sh
+COPY api/docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ARG COMMIT_SHA
