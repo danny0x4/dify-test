@@ -9,7 +9,7 @@ pipeline {
         BUILD_TAG = "${BUILD_NUMBER}"
         K8S_MANIFEST_REPO = 'https://github.com/danny0x4/k8s-manifests.git'
         GITHUB_TOKEN = credentials('github-token-id')
-        DEPLOYMENT_YML_PATH = 'dify-test/dify-api/deployment-svc.yaml'
+        DEPLOYMENT_YML_PATH = 'dify-test/dify-api/deployment-svc.yml'
     }
 
     stages {
